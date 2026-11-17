@@ -97,7 +97,7 @@ class BDSA_Admin {
 		$in  = is_array( $in ) ? $in : array();
 		$out = array();
 
-		foreach ( array( 'enabled', 'show_box', 'thana_dropdown', 'ensure_fields', 'field_order', 'lean_checkout', 'validate_phone', 'bangla_labels', 'style', 'delivery_enabled', 'lock_delivery', 'respect_free', 'save_addresses', 'phone_required', 'email_optional', 'show_email', 'thana_optional', 'ai_enabled' ) as $k ) {
+		foreach ( array( 'enabled', 'show_box', 'thana_dropdown', 'ensure_fields', 'field_order', 'lean_checkout', 'validate_phone', 'bangla_labels', 'style', 'delivery_enabled', 'lock_delivery', 'delivery_note', 'respect_free', 'save_addresses', 'phone_required', 'email_optional', 'show_email', 'thana_optional', 'ai_enabled' ) as $k ) {
 			$out[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 		}
 
@@ -240,6 +240,7 @@ class BDSA_Admin {
 				<table class="form-table" role="presentation">
 					<tr><th scope="row">Enable</th><td><?php self::checkbox( 'delivery_enabled', 'Set the delivery charge from the customer\'s address', 'Replaces the flat-rate / shipping options with one automatic charge.' ); ?></td></tr>
 					<tr><th scope="row">Lock the charge</th><td><?php self::checkbox( 'lock_delivery', 'The customer cannot choose or change the delivery charge', 'Only the one charge for the delivery place is shown, with no choice. Turn off to also keep WooCommerce local-pickup / free-shipping choices.' ); ?></td></tr>
+					<tr><th scope="row">Show prices upfront</th><td><?php self::checkbox( 'delivery_note', 'Show the delivery price list on the checkout page before the address is chosen', 'Stops the surprise when the total changes after the customer picks a district.' ); ?></td></tr>
 					<tr><th scope="row">Free shipping rule</th><td><?php self::checkbox( 'respect_free', 'Still give free delivery when your WooCommerce free-shipping rule is met', 'For example "free over 1000" under WooCommerce > Settings > Shipping. Turn off to always charge by place, even on big orders.' ); ?></td></tr>
 					<tr><th scope="row">1. Inside Dhaka city</th><td><?php self::number( 'fee_inside', 0, 100000, 'Taka. The Dhaka city thanas (Mirpur, Uttara, Gulshan, Dhanmondi, Motijheel ...).', '0.01' ); ?></td></tr>
 					<tr><th scope="row">2. Sub-urban Dhaka city</th><td><?php self::number( 'fee_suburb', 0, 100000, 'Taka. Savar, Keraniganj, Dhamrai, Nawabganj, Dohar, plus the places listed below (Gazipur and Narayanganj city areas by default).', '0.01' ); ?></td></tr>

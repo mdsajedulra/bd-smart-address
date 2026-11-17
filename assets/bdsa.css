@@ -97,3 +97,8 @@
 .bdsa-delivery strong {
 	font-weight: 700;
 }
+
+.bdsa-topnote{margin:0 0 14px;padding:10px 12px;border:1px solid #f1d98a;background:#fff8e1;border-radius:8px;font-size:14px;line-height:1.6}
+.bdsa-topnote small{display:block;opacity:.8}
+.bdsa-pl-s{opacity:.4;margin:0 4px}
+.bdsa-fee-note td{font-size:13px;padding:8px 10px;background:#fff8e1;line-height:1.6}

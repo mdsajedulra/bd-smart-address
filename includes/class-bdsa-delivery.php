@@ -24,6 +24,41 @@ class BDSA_Delivery {
 	public static function init() {
 		add_filter( 'woocommerce_package_rates', array( __CLASS__, 'rates' ), 100, 2 );
 		add_filter( 'woocommerce_customer_default_location_array', array( __CLASS__, 'default_location' ) );
+		add_action( 'woocommerce_review_order_before_shipping', array( __CLASS__, 'price_note' ) );
+		add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'top_note' ), 20 );
+	}
+
+	/**
+	 * Plain-language price list, shown BEFORE the customer picks an address so the charge never comes as a surprise.
+	 */
+	private static function price_list() {
+		$z = array( 'inside', 'suburb', 'outside' );
+		$o = array();
+		foreach ( $z as $k ) {
+			$f = self::fee( $k );
+			$o[] = '<span class="bdsa-pl-i">' . esc_html( self::label( $k ) ) . ': <strong>' . ( $f > 0 ? wp_kses_post( wc_price( $f ) ) : esc_html__( 'Free', 'woocommerce' ) ) . '</strong></span>';
+		}
+		return implode( ' <span class="bdsa-pl-s">|</span> ', $o );
+	}
+
+	public static function top_note() {
+		if ( ! self::enabled() || ! BDSA_Plugin::get( 'delivery_note' ) ) {
+			return;
+		}
+		echo '<div class="bdsa-topnote">🚚 <b>ডেলিভারি চার্জ:</b> ' . self::price_list() . ' <small>— ঠিকানা দিলে আপনার চার্জ নিচে নিজে থেকে বসে যাবে।</small></div>'; // phpcs:ignore WordPress.Security.EscapeOutput
+	}
+
+	public static function price_note() {
+		if ( ! self::enabled() || ! BDSA_Plugin::get( 'delivery_note' ) ) {
+			return;
+		}
+		$pkg = function_exists( 'WC' ) && WC()->shipping() ? WC()->shipping()->get_packages() : array();
+		$dest = ( $pkg && isset( $pkg[0]['destination'] ) ) ? $pkg[0]['destination'] : array();
+		$c = self::classify( $dest );
+		if ( null !== $c['di'] ) {
+			return;
+		}
+		echo '<tr class="bdsa-fee-note"><td colspan="2">ℹ️ ঠিকানা দেওয়ার পর ডেলিভারি চার্জ ঠিক হবে: ' . self::price_list() . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 
 	public static function enabled() {
@@ -252,7 +287,11 @@ class BDSA_Delivery {
 			return array( $free[0] => $free[1] );
 		}
 
-		$rate = new WC_Shipping_Rate( self::METHOD_ID, self::label( $c['zone'] ), self::fee( $c['zone'] ), array(), self::METHOD_ID );
+		$lbl  = self::label( $c['zone'] );
+		if ( null === $c['di'] && BDSA_Plugin::get( 'delivery_note' ) ) {
+			$lbl = 'ডেলিভারি (ঠিকানা দিলে ঠিক হবে)';
+		}
+		$rate = new WC_Shipping_Rate( self::METHOD_ID, $lbl, self::fee( $c['zone'] ), array(), self::METHOD_ID );
 		$rate->add_meta_data( 'bdsa_zone', $c['zone'] );
 		return array( self::METHOD_ID => $rate ) + $keep;
 	}

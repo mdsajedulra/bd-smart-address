@@ -68,6 +68,35 @@ class BDSA_Delivery {
 		echo '<tr class="bdsa-fee-row"><th>ডেলিভারি চার্জ</th><td>' . ( $fee > 0 ? wp_kses_post( wc_price( $fee ) ) : 'ফ্রি' ) . '<div class="bdsa-fee-zone">' . esc_html( self::label( $c['zone'] ) ) . '</div></td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 
+	public static function enabled() {
+		return (bool) BDSA_Plugin::get( 'enabled' ) && (bool) BDSA_Plugin::get( 'delivery_enabled' );
+	}
+
+	/**
+	 * Changes whenever a setting that affects the charge changes (used to bust the REST cache).
+	 */
+	public static function signature() {
+		return md5(
+			wp_json_encode(
+				array(
+					(int) self::enabled(),
+					(float) BDSA_Plugin::get( 'fee_inside' ),
+					(float) BDSA_Plugin::get( 'fee_suburb' ),
+					(float) BDSA_Plugin::get( 'fee_outside' ),
+					(string) BDSA_Plugin::get( 'label_inside' ),
+					(string) BDSA_Plugin::get( 'label_suburb' ),
+					(string) BDSA_Plugin::get( 'label_outside' ),
+					(string) BDSA_Plugin::get( 'extra_inside' ),
+					(string) BDSA_Plugin::get( 'suburb_extra' ),
+					(string) BDSA_Plugin::get( 'dhaka_unknown' ),
+				)
+			)
+		);
+	}
+
+
+	/* ---------- Zones and prices ---------- */
+
 	private static function extra_inside() {
 		return array_filter( array_map( 'trim', explode( ',', (string) BDSA_Plugin::get( 'extra_inside' ) ) ) );
 	}

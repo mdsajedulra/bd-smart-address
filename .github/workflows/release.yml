@@ -1,0 +1,67 @@
+# Publishes a GitHub Release (tag vX.Y.Z + bd-smart-address.zip) whenever the version in
+# bd-smart-address.php changes on main, or a vX.Y.Z tag is pushed, or it is run by hand.
+# Every WordPress site running the plugin then shows "Update available" on its Plugins page.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths: ['bd-smart-address.php', '.github/workflows/release.yml']
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Read the plugin version
+        id: ver
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          HEADER=$(grep -m1 -oP '^\s*\*\s*Version:\s*\K[0-9.]+' bd-smart-address.php)
+          CONST=$(grep -m1 -oP "define\(\s*'BDSA_VERSION',\s*'\K[0-9.]+" bd-smart-address.php)
+          echo "header=$HEADER const=$CONST"
+          [ "$HEADER" = "$CONST" ] || { echo "::error::Version header ($HEADER) and BDSA_VERSION ($CONST) differ"; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "${GITHUB_REF_NAME#v}" != "$HEADER" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match version $HEADER"; exit 1
+          fi
+          echo "tag=v$HEADER" >> "$GITHUB_OUTPUT"
+          if gh release view "v$HEADER" >/dev/null 2>&1; then
+            echo "Release v$HEADER already exists - nothing to do."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build bd-smart-address.zip
+        if: steps.ver.outputs.skip != '1'
+        run: |
+          mkdir -p build/bd-smart-address
+          rsync -a --exclude '.git' --exclude '.github' --exclude 'tools' --exclude 'build' \
+            --exclude 'README.md' --exclude '.gitignore' ./ build/bd-smart-address/
+          cd build && zip -qr ../bd-smart-address.zip bd-smart-address
+          unzip -l ../bd-smart-address.zip | tail -1
+
+      - name: Publish release
+        if: steps.ver.outputs.skip != '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.ver.outputs.tag }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            NOTES=$(git tag -l --format='%(contents)' "$TAG")
+          else
+            NOTES=$(git log -1 --format=%b | sed '/^Co-Authored-By:/d;/^Claude-Session:/d')
+          fi
+          [ -n "$(echo "$NOTES" | tr -d '[:space:]')" ] || NOTES="BD Smart Address $TAG"
+          gh release create "$TAG" bd-smart-address.zip --target "$GITHUB_SHA" --title "BD Smart Address $TAG" --notes "$NOTES"

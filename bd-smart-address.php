@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       BD Smart Address for WooCommerce
  * Description:       Smart checkout for Bangladesh: type the full address and District/Thana fill in automatically, a cleaned-up full address is suggested, and delivery charge is set automatically (Inside Dhaka city / Sub-urban Dhaka / Outside Dhaka). Clean mobile-first design. Optional AI fallback (OpenRouter free models, Gemini or Claude).
- * Version:           1.6.1
+ * Version:           1.7.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Sajedul
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'BDSA_VERSION', '1.6.1' );
+define( 'BDSA_VERSION', '1.7.0' );
 define( 'BDSA_FILE', __FILE__ );
 define( 'BDSA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BDSA_URL', plugin_dir_url( __FILE__ ) );
@@ -103,6 +103,10 @@ class BDSA_Plugin {
 
 	public static function boot() {
 		self::maybe_upgrade();
+
+		// GitHub auto-updates (also runs on WP-Cron, so it is not limited to the admin).
+		require_once BDSA_DIR . 'includes/class-bdsa-updater.php';
+		BDSA_Updater::init();
 
 		require_once BDSA_DIR . 'includes/class-bdsa-geo.php';
 		require_once BDSA_DIR . 'includes/class-bdsa-ai.php';

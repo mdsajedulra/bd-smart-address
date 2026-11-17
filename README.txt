@@ -1,4 +1,4 @@
-BD Smart Address for WooCommerce  (v1.6.1)
+BD Smart Address for WooCommerce  (v1.7.0)
 ==========================================
 
 What it does

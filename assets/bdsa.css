@@ -1,0 +1,99 @@
+.bdsa-box {
+	position: relative;
+	margin: 0 0 14px;
+	padding: 10px 34px 10px 12px;
+	border: 1px solid #cfe3d4;
+	border-left: 4px solid #2e7d32;
+	border-radius: 6px;
+	background: #f4faf5;
+	color: #1f2d22;
+	font-size: 14px;
+	line-height: 1.5;
+	clear: both;
+}
+.bdsa-box[hidden] {
+	display: none;
+}
+.bdsa-box.is-loading {
+	border-left-color: #9aa5a0;
+	background: #f6f7f7;
+	color: #50575e;
+}
+.bdsa-box.is-loading::before {
+	content: "";
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	margin-right: 8px;
+	vertical-align: -2px;
+	border: 2px solid #9aa5a0;
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: bdsa-spin 0.7s linear infinite;
+}
+@keyframes bdsa-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+.bdsa-title {
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	color: #2e7d32;
+}
+.bdsa-refined {
+	margin-top: 2px;
+	font-weight: 600;
+	word-break: break-word;
+}
+.bdsa-actions {
+	margin-top: 8px;
+}
+.bdsa-use {
+	padding: 5px 12px;
+	border: 0;
+	border-radius: 4px;
+	background: #2e7d32;
+	color: #fff;
+	font-size: 13px;
+	line-height: 1.4;
+	cursor: pointer;
+}
+.bdsa-use:hover,
+.bdsa-use:focus {
+	background: #256628;
+	color: #fff;
+}
+.bdsa-meta {
+	margin-top: 8px;
+	font-size: 13px;
+	color: #3c4a40;
+}
+.bdsa-close {
+	position: absolute;
+	top: 4px;
+	right: 6px;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: #50575e;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+}
+.bdsa-close:hover,
+.bdsa-close:focus {
+	color: #000;
+	background: transparent;
+}
+.bdsa-delivery {
+	margin-top: 4px;
+	font-size: 13px;
+	color: #1f2d22;
+}
+.bdsa-delivery strong {
+	font-weight: 700;
+}

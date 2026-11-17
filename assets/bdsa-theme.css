@@ -1,0 +1,720 @@
+/*
+ * BD Smart Address: checkout design.
+ * Scoped to body.bdsa-on. Built for WooCommerce classic checkout and CartFlows
+ * (wcf-* classes). Mobile first. Colour: --bdsa-accent (Settings > BD Smart Address).
+ */
+body.bdsa-on {
+	--bdsa-accent: #c8102e;
+	--bdsa-ink: #1a1a2e;
+	--bdsa-muted: #5d6275;
+	--bdsa-line: #e3e6ee;
+	--bdsa-soft: #f6f7fb;
+	--bdsa-radius: 14px;
+	--bdsa-field: 12px;
+	--bdsa-ring: rgba(200, 16, 46, 0.18);
+}
+@supports (color: color-mix(in srgb, red, blue)) {
+	body.bdsa-on {
+		--bdsa-ring: color-mix(in srgb, var(--bdsa-accent) 20%, transparent);
+	}
+}
+
+/* ---------- cards ---------- */
+.bdsa-on form.checkout #customer_details,
+.bdsa-on form.checkout .wcf-customer-shipping,
+.bdsa-on form.checkout .wcf-order-wrap,
+.bdsa-on form.checkout > #order_review {
+	box-sizing: border-box;
+	padding: 20px;
+	margin-bottom: 16px;
+	background: #fff;
+	border: 1px solid var(--bdsa-line);
+	border-radius: var(--bdsa-radius);
+	box-shadow: none;
+	color: var(--bdsa-ink);
+}
+.bdsa-on form.checkout #customer_details .col-1,
+.bdsa-on form.checkout #customer_details .col-2 {
+	float: none;
+	width: 100%;
+	max-width: none;
+	padding: 0;
+}
+.bdsa-on form.checkout #customer_details .woocommerce-additional-fields {
+	margin-top: 4px;
+}
+
+/* ---------- headings ---------- */
+.bdsa-on form.checkout h3,
+.bdsa-on form.checkout .wcf-shipping-methods-title {
+	margin: 0 0 16px;
+	padding: 0 0 0 12px;
+	border: 0;
+	border-left: 4px solid var(--bdsa-accent);
+	font-size: 18px;
+	line-height: 1.3;
+	font-weight: 700;
+	color: var(--bdsa-ink);
+	text-transform: none;
+	letter-spacing: 0;
+}
+.bdsa-on form.checkout .wcf-order-wrap > h3,
+.bdsa-on form.checkout > #order_review_heading {
+	margin-bottom: 12px;
+}
+
+/* ---------- fields ---------- */
+.bdsa-on form.checkout .form-row {
+	display: block;
+	float: none;
+	width: 100%;
+	margin: 0 0 14px;
+	padding: 0;
+}
+.bdsa-on form.checkout .form-row label {
+	display: block;
+	margin: 0 0 6px;
+	font-size: 14px;
+	line-height: 1.4;
+	font-weight: 600;
+	color: var(--bdsa-ink);
+}
+.bdsa-on form.checkout .form-row .required {
+	color: var(--bdsa-accent);
+	text-decoration: none;
+	border: 0;
+}
+.bdsa-on form.checkout .form-row .optional {
+	font-weight: 400;
+	color: var(--bdsa-muted);
+}
+.bdsa-on form.checkout .woocommerce-input-wrapper {
+	display: block;
+	width: 100%;
+}
+.bdsa-on form.checkout input.input-text,
+.bdsa-on form.checkout textarea.input-text,
+.bdsa-on form.checkout select {
+	display: block;
+	width: 100%;
+	max-width: none;
+	box-sizing: border-box;
+	min-height: 50px;
+	margin: 0;
+	padding: 12px 14px;
+	font-family: inherit;
+	font-size: 16px; /* 16px stops iOS from zooming the page on focus */
+	line-height: 1.4;
+	color: var(--bdsa-ink);
+	background: #fff;
+	border: 1.5px solid var(--bdsa-line);
+	border-radius: var(--bdsa-field);
+	box-shadow: none;
+	outline: 0;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.bdsa-on form.checkout textarea.input-text {
+	min-height: 84px;
+	resize: vertical;
+}
+.bdsa-on form.checkout select {
+	-webkit-appearance: none;
+	appearance: none;
+	padding-right: 42px;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%235d6275' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+	background-repeat: no-repeat;
+	background-position: right 16px center;
+}
+.bdsa-on form.checkout input.input-text::placeholder,
+.bdsa-on form.checkout textarea.input-text::placeholder {
+	color: #9aa0b4;
+	opacity: 1;
+}
+.bdsa-on form.checkout input.input-text:focus,
+.bdsa-on form.checkout textarea.input-text:focus,
+.bdsa-on form.checkout select:focus {
+	border-color: var(--bdsa-accent);
+	box-shadow: 0 0 0 4px var(--bdsa-ring);
+}
+.bdsa-on form.checkout .woocommerce-invalid input.input-text,
+.bdsa-on form.checkout .woocommerce-invalid select,
+.bdsa-on form.checkout .woocommerce-invalid .select2-selection {
+	border-color: var(--bdsa-accent);
+}
+
+/* select2 (WooCommerce turns the District <select> into one) */
+.bdsa-on form.checkout .select2-container {
+	width: 100% !important;
+}
+.bdsa-on form.checkout .select2-container .select2-selection--single {
+	display: flex;
+	align-items: center;
+	box-sizing: border-box;
+	height: 50px;
+	border: 1.5px solid var(--bdsa-line);
+	border-radius: var(--bdsa-field);
+	background: #fff;
+}
+.bdsa-on form.checkout .select2-container--open .select2-selection--single,
+.bdsa-on form.checkout .select2-container--focus .select2-selection--single {
+	border-color: var(--bdsa-accent);
+	box-shadow: 0 0 0 4px var(--bdsa-ring);
+}
+.bdsa-on form.checkout .select2-container .select2-selection__rendered {
+	padding: 0 40px 0 14px;
+	font-size: 16px;
+	line-height: 1.4;
+	color: var(--bdsa-ink);
+}
+.bdsa-on form.checkout .select2-container .select2-selection__arrow {
+	top: 0;
+	right: 8px;
+	height: 100%;
+}
+
+/* ---------- delivery options ---------- */
+.bdsa-on form.checkout .wcf-shipping-methods-wrapper ul,
+.bdsa-on form.checkout ul#shipping_method {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.bdsa-on form.checkout .wcf-shipping-methods-wrapper li,
+.bdsa-on form.checkout ul#shipping_method li {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	margin: 0 0 8px;
+	padding: 13px 14px;
+	border: 1.5px solid var(--bdsa-line);
+	border-radius: var(--bdsa-field);
+	background: #fff;
+	font-weight: 600;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.bdsa-on form.checkout .wcf-shipping-methods-wrapper li:has(input:checked),
+.bdsa-on form.checkout ul#shipping_method li:has(input:checked) {
+	border-color: var(--bdsa-accent);
+	background: var(--bdsa-soft);
+}
+.bdsa-on form.checkout .wcf-shipping-methods-wrapper li label,
+.bdsa-on form.checkout ul#shipping_method li label {
+	flex: 1;
+	margin: 0;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+}
+.bdsa-on form.checkout .wcf-shipping-methods-wrapper li:only-child input[type="radio"],
+.bdsa-on form.checkout ul#shipping_method li:only-child input[type="radio"] {
+	display: none;
+}
+.bdsa-on form.checkout .wcf-shipping-methods-wrapper input[type="radio"] {
+	accent-color: var(--bdsa-accent);
+}
+.bdsa-on form.checkout .wcf-shipping-methods-wrapper .amount {
+	color: var(--bdsa-accent);
+	font-weight: 700;
+}
+
+/* ---------- order summary ---------- */
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table {
+	width: 100%;
+	margin: 0 0 18px;
+	border: 0;
+	border-collapse: collapse;
+	background: transparent;
+	table-layout: auto;
+}
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table th,
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table td {
+	padding: 12px 0;
+	border: 0;
+	border-bottom: 1px solid var(--bdsa-line);
+	background: transparent;
+	font-size: 15px;
+	line-height: 1.5;
+	color: var(--bdsa-ink);
+	vertical-align: top;
+}
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table thead th {
+	padding-top: 0;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--bdsa-muted);
+}
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table th:last-child,
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table td:last-child {
+	text-align: right;
+	white-space: nowrap;
+	padding-left: 14px;
+}
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table .product-name {
+	font-weight: 600;
+}
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table .product-quantity {
+	color: var(--bdsa-muted);
+	font-weight: 500;
+}
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table tfoot th {
+	font-weight: 500;
+	color: var(--bdsa-muted);
+	text-align: left;
+}
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table tfoot td {
+	font-weight: 600;
+}
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table tr.order-total th,
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table tr.order-total td {
+	padding-top: 16px;
+	border-bottom: 0;
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--bdsa-ink);
+}
+.bdsa-on form.checkout table.woocommerce-checkout-review-order-table tr.order-total .amount {
+	font-size: 22px;
+	font-weight: 800;
+	color: var(--bdsa-accent);
+}
+/* CartFlows adds a clickable "Shipping" row; the delivery card above already says it. */
+.bdsa-on form.checkout .wcf-shipping-toggle {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	font: inherit;
+	color: inherit;
+	pointer-events: none;
+	cursor: default;
+}
+.bdsa-on form.checkout .wcf-shipping-toggle-icon {
+	display: none;
+}
+
+/* ---------- payment ---------- */
+.bdsa-on form.checkout #payment {
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	padding: 0;
+}
+.bdsa-on form.checkout #payment ul.payment_methods {
+	margin: 0 0 14px;
+	padding: 0;
+	border: 0;
+	list-style: none;
+}
+.bdsa-on form.checkout #payment li.wc_payment_method {
+	margin: 0 0 8px;
+	padding: 13px 14px;
+	border: 1.5px solid var(--bdsa-line);
+	border-radius: var(--bdsa-field);
+	background: #fff;
+}
+.bdsa-on form.checkout #payment li.wc_payment_method:has(input:checked) {
+	border-color: var(--bdsa-accent);
+}
+.bdsa-on form.checkout #payment li.wc_payment_method > label {
+	display: inline;
+	margin: 0;
+	font-size: 15px;
+	font-weight: 700;
+	cursor: pointer;
+}
+.bdsa-on form.checkout #payment li.wc_payment_method input[type="radio"] {
+	accent-color: var(--bdsa-accent);
+	margin-right: 8px;
+}
+.bdsa-on form.checkout #payment div.payment_box {
+	margin: 10px 0 0;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: var(--bdsa-soft);
+	color: var(--bdsa-muted);
+	font-size: 14px;
+	line-height: 1.55;
+}
+.bdsa-on form.checkout #payment div.payment_box::before,
+.bdsa-on form.checkout #payment div.payment_box::after {
+	display: none;
+}
+.bdsa-on form.checkout #payment div.payment_box p {
+	margin: 0;
+}
+.bdsa-on form.checkout .woocommerce-privacy-policy-text,
+.bdsa-on form.checkout .woocommerce-terms-and-conditions-wrapper {
+	margin: 0 0 12px;
+	font-size: 12.5px;
+	line-height: 1.55;
+	color: var(--bdsa-muted);
+}
+.bdsa-on form.checkout .woocommerce-privacy-policy-text p {
+	margin: 0;
+}
+.bdsa-on form.checkout .woocommerce-privacy-policy-text a {
+	color: var(--bdsa-accent);
+}
+
+/* ---------- place order ---------- */
+.bdsa-on form.checkout #place_order {
+	display: block;
+	width: 100%;
+	min-height: 56px;
+	margin: 0;
+	padding: 14px 18px;
+	border: 0;
+	border-radius: var(--bdsa-radius);
+	background: var(--bdsa-accent);
+	color: #fff;
+	font-family: inherit;
+	font-size: 18px;
+	line-height: 1.3;
+	font-weight: 700;
+	letter-spacing: 0;
+	text-transform: none;
+	text-align: center;
+	cursor: pointer;
+	box-shadow: none;
+	transition: filter 0.15s ease, transform 0.05s ease;
+}
+.bdsa-on form.checkout #place_order:hover,
+.bdsa-on form.checkout #place_order:focus {
+	background: var(--bdsa-accent);
+	color: #fff;
+	filter: brightness(0.92);
+}
+.bdsa-on form.checkout #place_order:active {
+	transform: translateY(1px);
+}
+.bdsa-on form.checkout #place_order:focus-visible {
+	outline: 3px solid var(--bdsa-ink);
+	outline-offset: 2px;
+}
+
+/* ---------- messages ---------- */
+.bdsa-on .woocommerce-error,
+.bdsa-on .woocommerce-message,
+.bdsa-on .woocommerce-info,
+.bdsa-on .woocommerce-NoticeGroup .woocommerce-error {
+	margin: 0 0 16px;
+	padding: 12px 16px 12px 16px;
+	border: 1px solid var(--bdsa-line);
+	border-left: 4px solid var(--bdsa-accent);
+	border-radius: 12px;
+	background: #fff;
+	color: var(--bdsa-ink);
+	font-size: 14.5px;
+	line-height: 1.55;
+	list-style: none;
+}
+.bdsa-on .woocommerce-error::before,
+.bdsa-on .woocommerce-message::before,
+.bdsa-on .woocommerce-info::before {
+	display: none;
+}
+.bdsa-on .woocommerce-error li {
+	margin: 0;
+	padding: 2px 0;
+}
+
+/* ---------- small screens ---------- */
+@media (max-width: 767px) {
+	.bdsa-on form.checkout #customer_details,
+	.bdsa-on form.checkout .wcf-customer-shipping,
+	.bdsa-on form.checkout .wcf-order-wrap,
+	.bdsa-on form.checkout > #order_review {
+		padding: 16px;
+		margin-bottom: 14px;
+	}
+	.bdsa-on form.checkout h3,
+	.bdsa-on form.checkout .wcf-shipping-methods-title {
+		font-size: 17px;
+		margin-bottom: 14px;
+	}
+	.bdsa-on form.checkout table.woocommerce-checkout-review-order-table th,
+	.bdsa-on form.checkout table.woocommerce-checkout-review-order-table td {
+		font-size: 14.5px;
+	}
+	.bdsa-on form.checkout #place_order {
+		min-height: 58px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.bdsa-on form.checkout input.input-text,
+	.bdsa-on form.checkout select,
+	.bdsa-on form.checkout #place_order {
+		transition: none;
+	}
+}
+
+
+/* =====================================================================
+ * v1.3 - one clean look on any theme or builder
+ * Flat cards (a thin border, no shadows), no card inside a card,
+ * and a locked delivery line that never overflows.
+ * ===================================================================== */
+
+/* ---- Elementor Pro checkout widget: left card + ONE right card ---- */
+body.bdsa-on .e-checkout__container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 24px;
+	align-items: flex-start;
+	width: 100%;
+}
+body.bdsa-on .e-checkout__container .e-checkout__column {
+	box-sizing: border-box;
+	float: none;
+	min-width: 0;
+	margin: 0;
+}
+body.bdsa-on .e-checkout__container .e-checkout__column-start {
+	flex: 1 1 55%;
+}
+body.bdsa-on .e-checkout__container .e-checkout__column-end {
+	flex: 1 1 38%;
+}
+body.bdsa-on .e-checkout__container .e-checkout__column-start,
+body.bdsa-on .e-checkout__container .e-checkout__column-inner {
+	box-sizing: border-box;
+	width: auto;
+	padding: 22px !important;
+	background: #fff !important;
+	border: 1px solid var(--bdsa-line) !important;
+	border-radius: var(--bdsa-radius) !important;
+	box-shadow: none !important;
+}
+/* the right column itself is only a holder; its inner box is the card */
+body.bdsa-on .e-checkout__container .e-checkout__column-end {
+	padding: 0 !important;
+	background: transparent !important;
+	border: 0 !important;
+	box-shadow: none !important;
+}
+body.bdsa-on .e-checkout__container .e-checkout__column-inner {
+	display: block;
+	width: 100%;
+}
+/* everything inside those two cards is flat: no extra border, shadow or background */
+body.bdsa-on .e-checkout__container #customer_details,
+body.bdsa-on .e-checkout__container #customer_details .col-1,
+body.bdsa-on .e-checkout__container #customer_details .col-2,
+body.bdsa-on .e-checkout__container .woocommerce-billing-fields,
+body.bdsa-on .e-checkout__container .woocommerce-additional-fields,
+body.bdsa-on .e-checkout__container .woocommerce-shipping-fields,
+body.bdsa-on .e-checkout__container .e-checkout__order_review,
+body.bdsa-on .e-checkout__container .e-coupon-box,
+body.bdsa-on .e-checkout__container .e-checkout__order_review-2,
+body.bdsa-on .e-checkout__container #order_review,
+body.bdsa-on .e-checkout__container #payment {
+	box-sizing: border-box;
+	float: none;
+	width: 100%;
+	max-width: none;
+	margin: 0 !important;
+	padding: 0 !important;
+	background: transparent !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+}
+body.bdsa-on .e-checkout__container #customer_details .woocommerce-additional-fields {
+	margin-top: 8px !important;
+	padding-top: 18px !important;
+	border-top: 1px solid var(--bdsa-line) !important;
+}
+/* right card: sections separated by a hairline */
+body.bdsa-on .e-checkout__container .e-checkout__order_review {
+	padding-bottom: 6px !important;
+}
+body.bdsa-on form.checkout table.woocommerce-checkout-review-order-table thead th:first-child {
+	text-align: left;
+}
+body.bdsa-on .e-checkout__container .e-coupon-box {
+	padding: 16px 0 !important;
+	border-top: 1px solid var(--bdsa-line) !important;
+	border-bottom: 1px solid var(--bdsa-line) !important;
+	font-size: 14.5px;
+}
+body.bdsa-on .e-checkout__container .e-checkout__order_review-2 {
+	padding-top: 18px !important;
+}
+body.bdsa-on .e-checkout__container .e-checkout__order_review > h3,
+body.bdsa-on .e-checkout__container #order_review_heading {
+	margin-top: 0;
+}
+
+/* ---- delivery line: locked, one clean row, never overflows ---- */
+body.bdsa-on form.checkout tr.woocommerce-shipping-totals th {
+	width: 38%;
+	vertical-align: top;
+}
+body.bdsa-on form.checkout tr.woocommerce-shipping-totals td {
+	white-space: normal !important;
+	text-align: right !important;
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+body.bdsa-on.bdsa-lock form.checkout ul#shipping_method,
+body.bdsa-on.bdsa-lock form.checkout .woocommerce-shipping-methods {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+body.bdsa-on.bdsa-lock form.checkout ul#shipping_method li,
+body.bdsa-on.bdsa-lock form.checkout .woocommerce-shipping-methods li {
+	display: block !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	background: none !important;
+	box-shadow: none !important;
+	text-align: right;
+}
+body.bdsa-on.bdsa-lock form.checkout ul#shipping_method li input[type="radio"],
+body.bdsa-on.bdsa-lock form.checkout .woocommerce-shipping-methods li input[type="radio"] {
+	display: none !important;
+}
+body.bdsa-on.bdsa-lock form.checkout ul#shipping_method li label,
+body.bdsa-on.bdsa-lock form.checkout .woocommerce-shipping-methods li label {
+	display: inline !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	font-size: 14.5px;
+	font-weight: 600;
+	line-height: 1.5;
+	cursor: default;
+	pointer-events: none;
+}
+body.bdsa-on.bdsa-lock form.checkout ul#shipping_method li .amount {
+	color: var(--bdsa-accent);
+	font-weight: 700;
+}
+
+/* ---- payment: calm, one thin outline ---- */
+body.bdsa-on form.checkout #payment li.wc_payment_method {
+	box-shadow: none !important;
+	border: 1px solid var(--bdsa-line) !important;
+}
+body.bdsa-on form.checkout #payment li.wc_payment_method:has(input:checked) {
+	border-color: var(--bdsa-accent) !important;
+	background: var(--bdsa-soft);
+}
+
+/* ---- refined address box buttons: builder button styles must not leak in ---- */
+body.bdsa-on .bdsa-box .bdsa-close {
+	position: absolute !important;
+	top: 6px !important;
+	right: 6px !important;
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	width: 26px !important;
+	height: 26px !important;
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	border-radius: 50% !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	color: #50575e !important;
+	font-size: 20px !important;
+	line-height: 1 !important;
+}
+body.bdsa-on .bdsa-box .bdsa-close:hover,
+body.bdsa-on .bdsa-box .bdsa-close:focus {
+	background: rgba(0, 0, 0, 0.06) !important;
+	color: #000 !important;
+}
+body.bdsa-on .bdsa-box .bdsa-use {
+	display: inline-block !important;
+	width: auto !important;
+	min-height: 0 !important;
+	padding: 6px 14px !important;
+	border: 0 !important;
+	border-radius: 8px !important;
+	background: #2e7d32 !important;
+	box-shadow: none !important;
+	color: #fff !important;
+	font-size: 13px !important;
+	line-height: 1.4 !important;
+}
+body.bdsa-on .bdsa-box {
+	box-shadow: none;
+}
+
+/* ---- phones ---- */
+@media (max-width: 767px) {
+	body.bdsa-on .e-checkout__container {
+		gap: 16px;
+	}
+	body.bdsa-on .e-checkout__container .e-checkout__column-start,
+	body.bdsa-on .e-checkout__container .e-checkout__column-end {
+		flex: 1 1 100%;
+	}
+	body.bdsa-on .e-checkout__container .e-checkout__column-start,
+	body.bdsa-on .e-checkout__container .e-checkout__column-inner {
+		padding: 16px !important;
+	}
+}
+
+/* =====================================================================
+ * v1.5 - CartFlows checkout: ONE card, nothing inside it is a card.
+ * No shadows, no boxes inside boxes, the delivery charge shown once.
+ * ===================================================================== */
+body.bdsa-on[class*="cartflows-"] form.checkout #customer_details,
+body.bdsa-on[class*="cartflows-"] form.checkout .wcf-order-wrap,
+body.bdsa-on[class*="cartflows-"] form.checkout .wcf-order-wrap #order_review,
+body.bdsa-on[class*="cartflows-"] form.checkout > #order_review,
+body.bdsa-on[class*="cartflows-"] form.checkout .wcf-customer-shipping {
+	background: transparent !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	padding: 0 !important;
+	margin: 0 0 18px !important;
+}
+body.bdsa-on[class*="cartflows-"] form.checkout .wcf-order-wrap {
+	padding-top: 18px !important;
+	border-top: 1px solid var(--bdsa-line, #e6e8ec) !important;
+}
+body.bdsa-on[class*="cartflows-"] form.checkout .wcf-order-wrap #order_review table {
+	border: 0 !important;
+	box-shadow: none !important;
+}
+body.bdsa-on[class*="cartflows-"] form.checkout #place_order {
+	box-shadow: none !important;
+}
+/* the delivery charge already sits in the order table: no second "Shipping" box */
+body.bdsa-on.bdsa-lock[class*="cartflows-"] form.checkout .wcf-customer-shipping {
+	display: none !important;
+}
+/* the Elementor container that wraps the checkout is the one card */
+body.bdsa-on[class*="cartflows-"] .e-con:has(form.checkout):not(:has(.e-con form.checkout)) {
+	box-shadow: none !important;
+	border: 1px solid var(--bdsa-line, #e6e8ec) !important;
+	border-radius: 14px !important;
+	padding: 18px !important;
+}
+/* the little "added to cart" notice: flat, not a floating card */
+body.bdsa-on[class*="cartflows-"] .woocommerce-message {
+	box-shadow: none !important;
+}
+
+/* desktop: two columns with a gap and a thin divider (no boxes) */
+@media (min-width: 768px) {
+	body.bdsa-on[class*="cartflows-"] form.checkout #customer_details {
+		box-sizing: border-box !important;
+		padding-right: 28px !important;
+	}
+	body.bdsa-on[class*="cartflows-"] form.checkout .wcf-order-wrap {
+		box-sizing: border-box !important;
+		padding: 0 0 0 28px !important;
+		border-top: 0 !important;
+		border-left: 1px solid var(--bdsa-line, #e6e8ec) !important;
+	}
+}

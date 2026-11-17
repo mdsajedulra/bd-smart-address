@@ -24,7 +24,7 @@ class BDSA_Delivery {
 	public static function init() {
 		add_filter( 'woocommerce_package_rates', array( __CLASS__, 'rates' ), 100, 2 );
 		add_filter( 'woocommerce_customer_default_location_array', array( __CLASS__, 'default_location' ) );
-		add_action( 'woocommerce_review_order_before_shipping', array( __CLASS__, 'price_note' ) );
+		add_action( 'woocommerce_review_order_before_order_total', array( __CLASS__, 'price_note' ) );
 		add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'top_note' ), 20 );
 	}
 
@@ -48,46 +48,25 @@ class BDSA_Delivery {
 		echo '<div class="bdsa-topnote">🚚 <b>ডেলিভারি চার্জ:</b> ' . self::price_list() . ' <small>— ঠিকানা দিলে আপনার চার্জ নিচে নিজে থেকে বসে যাবে।</small></div>'; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 
-	public static function price_note() {
-		if ( ! self::enabled() || ! BDSA_Plugin::get( 'delivery_note' ) ) {
-			return;
-		}
-		$pkg = function_exists( 'WC' ) && WC()->shipping() ? WC()->shipping()->get_packages() : array();
-		$dest = ( $pkg && isset( $pkg[0]['destination'] ) ) ? $pkg[0]['destination'] : array();
-		$c = self::classify( $dest );
-		if ( null !== $c['di'] ) {
-			return;
-		}
-		echo '<tr class="bdsa-fee-note"><td colspan="2">ℹ️ ঠিকানা দেওয়ার পর ডেলিভারি চার্জ ঠিক হবে: ' . self::price_list() . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput
-	}
-
-	public static function enabled() {
-		return (bool) BDSA_Plugin::get( 'enabled' ) && (bool) BDSA_Plugin::get( 'delivery_enabled' );
-	}
-
 	/**
-	 * Changes whenever a setting that affects the charge changes (used to bust the REST cache).
+	 * Our own always-visible "Delivery charge" row in the order review (right above the total).
+	 * Themes / checkout builders often hide or re-style the native shipping row, which leaves
+	 * Subtotal -> Total with an unexplained jump. This row cannot be hidden by them.
 	 */
-	public static function signature() {
-		return md5(
-			wp_json_encode(
-				array(
-					(int) self::enabled(),
-					(float) BDSA_Plugin::get( 'fee_inside' ),
-					(float) BDSA_Plugin::get( 'fee_suburb' ),
-					(float) BDSA_Plugin::get( 'fee_outside' ),
-					(string) BDSA_Plugin::get( 'label_inside' ),
-					(string) BDSA_Plugin::get( 'label_suburb' ),
-					(string) BDSA_Plugin::get( 'label_outside' ),
-					(string) BDSA_Plugin::get( 'extra_inside' ),
-					(string) BDSA_Plugin::get( 'suburb_extra' ),
-					(string) BDSA_Plugin::get( 'dhaka_unknown' ),
-				)
-			)
-		);
+	public static function price_note() {
+		if ( ! self::enabled() || ! BDSA_Plugin::get( 'lock_delivery' ) || ! function_exists( 'WC' ) || ! WC()->cart || ! WC()->cart->needs_shipping() ) {
+			return;
+		}
+		$pkg  = WC()->shipping() ? WC()->shipping()->get_packages() : array();
+		$dest = ( $pkg && isset( $pkg[0]['destination'] ) ) ? $pkg[0]['destination'] : array();
+		$c    = self::classify( $dest );
+		if ( null === $c['di'] ) {
+			echo '<tr class="bdsa-fee-row bdsa-fee-pending"><th>ডেলিভারি চার্জ</th><td>ঠিকানা দিলে ঠিক হবে<div class="bdsa-fee-list">' . self::price_list() . '</div></td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			return;
+		}
+		$fee = (float) WC()->cart->get_shipping_total();
+		echo '<tr class="bdsa-fee-row"><th>ডেলিভারি চার্জ</th><td>' . ( $fee > 0 ? wp_kses_post( wc_price( $fee ) ) : 'ফ্রি' ) . '<div class="bdsa-fee-zone">' . esc_html( self::label( $c['zone'] ) ) . '</div></td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
-
-	/* ---------- Zones and prices ---------- */
 
 	private static function extra_inside() {
 		return array_filter( array_map( 'trim', explode( ',', (string) BDSA_Plugin::get( 'extra_inside' ) ) ) );

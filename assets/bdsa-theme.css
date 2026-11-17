@@ -718,3 +718,11 @@ body.bdsa-on[class*="cartflows-"] .woocommerce-message {
 		border-left: 1px solid var(--bdsa-line, #e6e8ec) !important;
 	}
 }
+
+/* our own delivery row replaces the native one, so the line is always there and never doubled */
+body.bdsa-on.bdsa-lock form.checkout tr.woocommerce-shipping-totals{display:none !important}
+body.bdsa-on form.checkout tr.bdsa-fee-row th{font-weight:600;vertical-align:top}
+body.bdsa-on form.checkout tr.bdsa-fee-row td{text-align:right !important;white-space:normal !important;font-weight:700}
+body.bdsa-on form.checkout tr.bdsa-fee-row .bdsa-fee-zone,
+body.bdsa-on form.checkout tr.bdsa-fee-row .bdsa-fee-list{display:block;font-size:12px;font-weight:400;opacity:.8;line-height:1.6}
+body.bdsa-on form.checkout tr.bdsa-fee-pending td{background:#fff8e1}

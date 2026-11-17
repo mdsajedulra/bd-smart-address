@@ -6,7 +6,7 @@ Smart checkout for Bangladesh: type the full address and District / Thana fill i
 - Geo data: `data/bd-geo.json` (district, Bangla names, thanas, aliases)
 - WordPress-style readme: `README.txt`
 
-Current version: 1.7.5
+Current version: 1.8.0
 
 Note: the OpenRouter API key is stored in the WordPress database (option `bdsa_settings`) or in `wp-config.php` via `BDSA_OPENROUTER_KEY`. Never commit a key to this repository.
 

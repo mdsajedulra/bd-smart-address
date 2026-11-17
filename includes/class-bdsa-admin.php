@@ -97,7 +97,7 @@ class BDSA_Admin {
 		$in  = is_array( $in ) ? $in : array();
 		$out = array();
 
-		foreach ( array( 'enabled', 'show_box', 'thana_dropdown', 'ensure_fields', 'field_order', 'lean_checkout', 'validate_phone', 'bangla_labels', 'style', 'delivery_enabled', 'lock_delivery', 'delivery_note', 'respect_free', 'save_addresses', 'phone_required', 'email_optional', 'show_email', 'thana_optional', 'ai_enabled' ) as $k ) {
+		foreach ( array( 'enabled', 'show_box', 'thana_dropdown', 'ensure_fields', 'field_order', 'lean_checkout', 'validate_phone', 'style', 'delivery_enabled', 'lock_delivery', 'respect_free', 'save_addresses', 'phone_required', 'email_optional', 'show_email', 'thana_optional', 'ai_enabled' ) as $k ) {
 			$out[ $k ] = empty( $in[ $k ] ) ? 0 : 1;
 		}
 
@@ -118,8 +118,22 @@ class BDSA_Admin {
 			$out[ $k ] = max( 0, min( 100000, $v ) );
 		}
 		foreach ( array( 'label_inside', 'label_suburb', 'label_outside' ) as $k ) {
-			$v         = isset( $in[ $k ] ) ? sanitize_text_field( $in[ $k ] ) : '';
-			$out[ $k ] = '' !== $v ? $v : $d[ $k ];
+			$v = isset( $in[ $k ] ) ? sanitize_text_field( $in[ $k ] ) : '';
+			// Empty = use the default text of the chosen language.
+			$out[ $k ] = in_array( $v, BDSA_Delivery::legacy_labels(), true ) ? '' : $v;
+		}
+		$out['language'] = ( isset( $in['language'] ) && 'bn' === $in['language'] ) ? 'bn' : 'en';
+
+		$out['fields'] = array();
+		$fin           = ( isset( $in['fields'] ) && is_array( $in['fields'] ) ) ? $in['fields'] : array();
+		foreach ( array_keys( BDSA_Checkout::field_keys() ) as $fk ) {
+			$row = ( isset( $fin[ $fk ] ) && is_array( $fin[ $fk ] ) ) ? $fin[ $fk ] : array();
+			$m   = isset( $row['mode'] ) ? (string) $row['mode'] : '';
+			$out['fields'][ $fk ] = array(
+				'mode'  => in_array( $m, array( 'required', 'optional', 'hidden' ), true ) ? $m : '',
+				'label' => isset( $row['label'] ) ? sanitize_text_field( $row['label'] ) : '',
+				'order' => isset( $row['order'] ) ? max( 0, min( 999, (int) $row['order'] ) ) : 0,
+			);
 		}
 		$out['extra_inside']  = isset( $in['extra_inside'] ) ? sanitize_text_field( $in['extra_inside'] ) : '';
 		$out['suburb_extra']  = isset( $in['suburb_extra'] ) ? sanitize_text_field( $in['suburb_extra'] ) : $d['suburb_extra'];
@@ -240,7 +254,6 @@ class BDSA_Admin {
 				<table class="form-table" role="presentation">
 					<tr><th scope="row">Enable</th><td><?php self::checkbox( 'delivery_enabled', 'Set the delivery charge from the customer\'s address', 'Replaces the flat-rate / shipping options with one automatic charge.' ); ?></td></tr>
 					<tr><th scope="row">Lock the charge</th><td><?php self::checkbox( 'lock_delivery', 'The customer cannot choose or change the delivery charge', 'Only the one charge for the delivery place is shown, with no choice. Turn off to also keep WooCommerce local-pickup / free-shipping choices.' ); ?></td></tr>
-					<tr><th scope="row">Show prices upfront</th><td><?php self::checkbox( 'delivery_note', 'Show the delivery price list on the checkout page before the address is chosen', 'Stops the surprise when the total changes after the customer picks a district.' ); ?></td></tr>
 					<tr><th scope="row">Free shipping rule</th><td><?php self::checkbox( 'respect_free', 'Still give free delivery when your WooCommerce free-shipping rule is met', 'For example "free over 1000" under WooCommerce > Settings > Shipping. Turn off to always charge by place, even on big orders.' ); ?></td></tr>
 					<tr><th scope="row">1. Inside Dhaka city</th><td><?php self::number( 'fee_inside', 0, 100000, 'Taka. The Dhaka city thanas (Mirpur, Uttara, Gulshan, Dhanmondi, Motijheel ...).', '0.01' ); ?></td></tr>
 					<tr><th scope="row">2. Sub-urban Dhaka city</th><td><?php self::number( 'fee_suburb', 0, 100000, 'Taka. Savar, Keraniganj, Dhamrai, Nawabganj, Dohar, plus the places listed below (Gazipur and Narayanganj city areas by default).', '0.01' ); ?></td></tr>
@@ -249,6 +262,7 @@ class BDSA_Admin {
 						<?php self::text( 'label_inside' ); ?><br><br>
 						<?php self::text( 'label_suburb' ); ?><br><br>
 						<?php self::text( 'label_outside' ); ?>
+						<p class="description">Leave empty to use the standard wording of the chosen language.</p>
 					</td></tr>
 					<tr><th scope="row">Sub-urban places</th><td><?php self::text( 'suburb_extra', 'large-text', 'Comma separated, written as District:Thana (English names), or just a District to include all of it. Example: Gazipur:Tongi, Narayanganj, Munshiganj:Sirajdikhan. Dhaka district non-city thanas are always sub-urban.' ); ?></td></tr>
 					<tr><th scope="row">Also count as inside Dhaka city</th><td><?php self::text( 'extra_inside', 'large-text', 'Optional. English thana names of Dhaka district to charge the inside-city fee, comma separated. Example: Savar, Keraniganj' ); ?></td></tr>
@@ -276,7 +290,13 @@ class BDSA_Admin {
 					<tr><th scope="row">Show email field</th><td><?php self::checkbox( 'show_email', 'Show an email field even if the checkout builder turned it off', 'Always optional when "Email optional" is ticked.' ); ?></td></tr>
 					<tr><th scope="row">Email optional</th><td><?php self::checkbox( 'email_optional', 'Make the email field optional', 'Customers can leave it empty.' ); ?></td></tr>
 					<tr><th scope="row">Mobile number check</th><td><?php self::checkbox( 'validate_phone', 'Require a valid Bangladeshi mobile number (01XXXXXXXXX)', 'Accepts +88 / 88 prefix and Bangla digits.' ); ?></td></tr>
-					<tr><th scope="row">Bangla labels</th><td><?php self::checkbox( 'bangla_labels', 'Show checkout words in Bangla (Your order, Subtotal, Total, Place order ...)', 'Skipped automatically when the site language is already Bangla. A button text you typed yourself in CartFlows is never changed.' ); ?></td></tr>
+					<tr><th scope="row">Language</th><td>
+						<select name="<?php echo esc_attr( $opt ); ?>[language]">
+							<option value="en" <?php selected( BDSA_Plugin::get( 'language' ), 'en' ); ?>>English</option>
+							<option value="bn" <?php selected( BDSA_Plugin::get( 'language' ), 'bn' ); ?>>বাংলা (Bangla)</option>
+						</select>
+						<p class="description">Language of the checkout words this plugin adds: District / Thana names, the refined address box, the delivery charge line, errors and (for Bangla) Subtotal, Total, Place order. Skipped when the site language is already Bangla. A button text you typed yourself in CartFlows is never changed.</p>
+					</td></tr>
 					<tr><th scope="row">Design</th><td>
 						<?php self::checkbox( 'style', 'Apply the clean mobile-first checkout design' ); ?>
 						<p><label>Accent colour <input type="text" name="<?php echo esc_attr( $opt ); ?>[accent]" value="<?php echo esc_attr( BDSA_Plugin::get( 'accent' ) ); ?>" class="small-text" placeholder="#C8102E"></label></p>
@@ -285,7 +305,38 @@ class BDSA_Admin {
 					<tr><th scope="row">Wait after typing stops</th><td><?php self::number( 'debounce', 300, 5000, 'Milliseconds. 900 works well.' ); ?></td></tr>
 				</table>
 
-					<h2 class="title">AI (optional)</h2>
+					<h2 class="title">Checkout fields</h2>
+				<p>You decide which fields the checkout shows. <b>Default</b> leaves the field as the plugin / your checkout builder sets it. <b>Hidden</b> removes it. Leave the label empty to keep the normal one. Order: a small number comes first (blank = automatic). If "Lean checkout" above is ticked, last name, company, postcode and address line 2 stay removed unless you set them to Required or Optional here.</p>
+				<table class="widefat striped" style="max-width:820px">
+					<thead><tr><th>Field</th><th>Show</th><th>Label (optional)</th><th>Order</th></tr></thead>
+					<tbody>
+					<?php
+					$fcfg = BDSA_Plugin::get( 'fields' );
+					$fcfg = is_array( $fcfg ) ? $fcfg : array();
+					foreach ( BDSA_Checkout::field_keys() as $fk => $fname ) :
+						$row = isset( $fcfg[ $fk ] ) && is_array( $fcfg[ $fk ] ) ? $fcfg[ $fk ] : array();
+						$m   = isset( $row['mode'] ) ? $row['mode'] : '';
+						$nm  = esc_attr( $opt ) . '[fields][' . esc_attr( $fk ) . ']';
+						?>
+						<tr>
+							<td><b><?php echo esc_html( $fname ); ?></b></td>
+							<td>
+								<select name="<?php echo $nm; // phpcs:ignore ?>[mode]">
+									<option value="" <?php selected( $m, '' ); ?>>Default</option>
+									<option value="required" <?php selected( $m, 'required' ); ?>>Show — required</option>
+									<option value="optional" <?php selected( $m, 'optional' ); ?>>Show — optional</option>
+									<option value="hidden" <?php selected( $m, 'hidden' ); ?>>Hidden</option>
+								</select>
+							</td>
+							<td><input type="text" class="regular-text" name="<?php echo $nm; // phpcs:ignore ?>[label]" value="<?php echo esc_attr( isset( $row['label'] ) ? $row['label'] : '' ); ?>"></td>
+							<td><input type="number" class="small-text" min="0" max="999" name="<?php echo $nm; // phpcs:ignore ?>[order]" value="<?php echo esc_attr( ! empty( $row['order'] ) ? $row['order'] : '' ); ?>"></td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+				<p class="description">Tip: hiding District or Thana is allowed, but then the delivery charge is worked out from the typed address only.</p>
+
+				<h2 class="title">AI (optional)</h2>
 					<p>Without AI the plugin still works for free using the built-in district and thana list, so you can leave this off. AI is only used for addresses the built-in matcher is not sure about, and its answer is checked against the built-in list.</p>
 					<table class="form-table" role="presentation">
 						<tr><th scope="row">Use AI</th><td><?php self::checkbox( 'ai_enabled', 'Use an AI model as a fallback' ); ?></td></tr>

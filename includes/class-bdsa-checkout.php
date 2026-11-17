@@ -123,22 +123,36 @@ class BDSA_Checkout {
 	}
 
 	public static function strings() {
-		return apply_filters(
-			'bdsa_strings',
-			array(
-				'loading'  => 'ঠিকানা যাচাই করা হচ্ছে…',
-				'title'    => 'পরিমার্জিত ঠিকানা',
-				'use'      => 'এই ঠিকানা ব্যবহার করুন',
-				'district' => 'জেলা',
-				'thana'    => 'থানা',
-				'auto'     => 'স্বয়ংক্রিয়ভাবে বসানো হয়েছে। ভুল হলে নিজে বদলে নিন।',
-				'select'   => 'থানা / উপজেলা নির্বাচন করুন',
-				'unknown'  => 'জানি না / নিশ্চিত নই',
-				'close'    => 'বন্ধ করুন',
-				'delivery' => 'ডেলিভারি চার্জ',
-				'address_ph' => 'বাড়ি/ফ্ল্যাট, রোড, এলাকা — পুরো ঠিকানা লিখুন',
-			)
+		$bn = BDSA_Plugin::bn();
+		$en = array(
+			'loading'    => 'Checking address…',
+			'title'      => 'Cleaned-up address',
+			'use'        => 'Use this address',
+			'district'   => 'District',
+			'thana'      => 'Thana',
+			'thana_full' => 'Thana / Upazila',
+			'auto'       => 'Filled in automatically. Change it if it is wrong.',
+			'select'     => 'Select thana / upazila',
+			'unknown'    => 'I do not know / not sure',
+			'close'      => 'Close',
+			'delivery'   => 'Delivery charge',
+			'address_ph' => 'House / flat, road, area — write the full address',
 		);
+		$bd = array(
+			'loading'    => 'ঠিকানা যাচাই করা হচ্ছে…',
+			'title'      => 'পরিমার্জিত ঠিকানা',
+			'use'        => 'এই ঠিকানা ব্যবহার করুন',
+			'district'   => 'জেলা',
+			'thana'      => 'থানা',
+			'thana_full' => 'থানা / উপজেলা',
+			'auto'       => 'স্বয়ংক্রিয়ভাবে বসানো হয়েছে। ভুল হলে নিজে বদলে নিন।',
+			'select'     => 'থানা / উপজেলা নির্বাচন করুন',
+			'unknown'    => 'জানি না / নিশ্চিত নই',
+			'close'      => 'বন্ধ করুন',
+			'delivery'   => 'ডেলিভারি চার্জ',
+			'address_ph' => 'বাড়ি/ফ্ল্যাট, রোড, এলাকা — পুরো ঠিকানা লিখুন',
+		);
+		return apply_filters( 'bdsa_strings', $bn ? $bd : $en );
 	}
 
 	public static function assets() {
@@ -166,6 +180,7 @@ class BDSA_Checkout {
 				'thanaDropdown' => (bool) BDSA_Plugin::get( 'thana_dropdown' ),
 				'geo'           => BDSA_Geo::frontend_map(),
 				'i18n'          => self::strings(),
+				'bn'            => BDSA_Plugin::bn(),
 			)
 		);
 		wp_enqueue_script( 'bdsa' );
@@ -188,6 +203,9 @@ class BDSA_Checkout {
 
 			if ( $lean ) {
 				foreach ( array( 'company', 'postcode', 'address_2', 'last_name' ) as $k ) {
+					if ( in_array( self::field_cfg( $k, 'mode' ), array( 'required', 'optional' ), true ) ) {
+						continue; // the owner asked for this field in the dashboard.
+					}
 					unset( $fields[ $g ][ $g . '_' . $k ] );
 				}
 			}
@@ -209,7 +227,7 @@ class BDSA_Checkout {
 				}
 				if ( ! isset( $fields[ $g ]['billing_city'] ) ) {
 					$fields[ $g ]['billing_city'] = array(
-						'label'        => $s['thana'] . ' / উপজেলা',
+						'label'        => $s['thana_full'],
 						'required'     => ! BDSA_Plugin::get( 'thana_optional' ),
 						'class'        => array( 'form-row-wide', 'address-field', 'update_totals_on_change' ),
 						'autocomplete' => 'address-level2',
@@ -228,14 +246,14 @@ class BDSA_Checkout {
 			if ( $bd && BDSA_Plugin::get( 'thana_dropdown' ) && isset( $fields[ $g ][ $g . '_city' ] ) ) {
 				$cls = (array) ( isset( $fields[ $g ][ $g . '_city' ]['class'] ) ? $fields[ $g ][ $g . '_city' ]['class'] : array() );
 				$fields[ $g ][ $g . '_city' ]['type']         = 'select';
-				$fields[ $g ][ $g . '_city' ]['label']        = $s['thana'] . ' / উপজেলা';
+				$fields[ $g ][ $g . '_city' ]['label']        = $s['thana_full'];
 				$fields[ $g ][ $g . '_city' ]['required']     = ! BDSA_Plugin::get( 'thana_optional' );
-				$fields[ $g ][ $g . '_city' ]['options']      = array( '' => BDSA_Plugin::get( 'thana_optional' ) ? $s['unknown'] : $s['select'] ) + BDSA_Geo::thana_options();
+				$fields[ $g ][ $g . '_city' ]['options']      = array( '' => BDSA_Plugin::get( 'thana_optional' ) ? $s['unknown'] : $s['select'] ) + BDSA_Geo::thana_options( BDSA_Plugin::bn() );
 				$fields[ $g ][ $g . '_city' ]['placeholder']  = $s['select'];
 				$fields[ $g ][ $g . '_city' ]['autocomplete'] = 'off';
 				$fields[ $g ][ $g . '_city' ]['class']        = array_values( array_unique( array_merge( $cls, array( 'update_totals_on_change' ) ) ) );
 			} elseif ( isset( $fields[ $g ][ $g . '_city' ] ) && $bd ) {
-				$fields[ $g ][ $g . '_city' ]['label'] = $s['thana'] . ' / উপজেলা';
+				$fields[ $g ][ $g . '_city' ]['label'] = $s['thana_full'];
 			}
 
 			if ( isset( $fields[ $g ][ $g . '_address_1' ] ) && empty( $fields[ $g ][ $g . '_address_1' ]['placeholder'] ) ) {
@@ -294,6 +312,82 @@ class BDSA_Checkout {
 				}
 			}
 		}
+		return self::apply_field_config( $fields );
+	}
+
+	/** Field keys the owner can set up in the dashboard (key => English name). */
+	public static function field_keys() {
+		return array(
+			'first_name'     => 'Name',
+			'last_name'      => 'Last name',
+			'phone'          => 'Phone',
+			'email'          => 'Email',
+			'address_1'      => 'Address',
+			'address_2'      => 'Address line 2',
+			'state'          => 'District',
+			'city'           => 'Thana / Upazila',
+			'postcode'       => 'Postcode',
+			'company'        => 'Company',
+			'country'        => 'Country',
+			'order_comments' => 'Order notes',
+		);
+	}
+
+	private static function field_cfg( $key, $what ) {
+		$all = BDSA_Plugin::get( 'fields' );
+		if ( ! is_array( $all ) || ! isset( $all[ $key ] ) || ! is_array( $all[ $key ] ) || ! isset( $all[ $key ][ $what ] ) ) {
+			return '';
+		}
+		return $all[ $key ][ $what ];
+	}
+
+	/**
+	 * The owner's own checkout field setup (Settings > BD Smart Address > Checkout fields):
+	 * show / hide, required / optional, label and order. Runs last, so it wins over everything else.
+	 */
+	private static function apply_field_config( $fields ) {
+		$all = BDSA_Plugin::get( 'fields' );
+		if ( ! is_array( $all ) || ! $all ) {
+			return $fields;
+		}
+		foreach ( self::field_keys() as $key => $name ) {
+			$mode  = (string) self::field_cfg( $key, 'mode' );
+			$label = trim( (string) self::field_cfg( $key, 'label' ) );
+			$order = (int) self::field_cfg( $key, 'order' );
+			if ( '' === $mode && '' === $label && ! $order ) {
+				continue;
+			}
+			$targets = array();
+			if ( 'order_comments' === $key ) {
+				$targets[] = array( 'order', 'order_comments' );
+			} else {
+				foreach ( array( 'billing', 'shipping' ) as $g ) {
+					$targets[] = array( $g, $g . '_' . $key );
+				}
+			}
+			foreach ( $targets as $t ) {
+				list( $g, $id ) = $t;
+				if ( ! isset( $fields[ $g ][ $id ] ) ) {
+					continue;
+				}
+				if ( 'hidden' === $mode ) {
+					unset( $fields[ $g ][ $id ] );
+					continue;
+				}
+				if ( 'required' === $mode || 'optional' === $mode ) {
+					$fields[ $g ][ $id ]['required'] = ( 'required' === $mode );
+					if ( isset( $fields[ $g ][ $id ]['class'] ) ) {
+						$fields[ $g ][ $id ]['class'] = array_values( array_diff( (array) $fields[ $g ][ $id ]['class'], array( 'optional' ) ) );
+					}
+				}
+				if ( '' !== $label ) {
+					$fields[ $g ][ $id ]['label'] = $label;
+				}
+				if ( $order > 0 ) {
+					$fields[ $g ][ $id ]['priority'] = $order;
+				}
+			}
+		}
 		return $fields;
 	}
 
@@ -320,7 +414,7 @@ class BDSA_Checkout {
 	/* ---------- Bangla labels ---------- */
 
 	private static function should_translate() {
-		if ( ! BDSA_Plugin::get( 'enabled' ) || ! BDSA_Plugin::get( 'bangla_labels' ) ) {
+		if ( ! BDSA_Plugin::get( 'enabled' ) || ! BDSA_Plugin::bn() ) {
 			return false;
 		}
 		if ( function_exists( 'is_admin' ) && is_admin() ) {
@@ -405,7 +499,7 @@ class BDSA_Checkout {
 		$p = preg_replace( '/[\s\-().]+/', '', self::ascii_digits( $data['billing_phone'] ) );
 		$p = preg_replace( '/^(?:\+?88)/', '', $p );
 		if ( ! preg_match( '/^01[3-9][0-9]{8}$/', $p ) ) {
-			$errors->add( 'bdsa_phone', 'সঠিক মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)।' );
+			$errors->add( 'bdsa_phone', BDSA_Plugin::t( 'Please enter a valid mobile number (for example 017XXXXXXXX).', 'সঠিক মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)।' ) );
 		}
 	}
 }

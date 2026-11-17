@@ -599,12 +599,12 @@ class BDSA_Geo {
 	/**
 	 * All thana names for the checkout <select>: value => label.
 	 */
-	public static function thana_options() {
+	public static function thana_options( $bn = true ) {
 		$opts = array();
 		foreach ( self::data() as $d ) {
 			foreach ( $d['u'] as $u ) {
 				if ( ! isset( $opts[ $u[0] ] ) ) {
-					$opts[ $u[0] ] = $u[0] . ' (' . $u[1] . ')';
+					$opts[ $u[0] ] = $bn ? $u[0] . ' (' . $u[1] . ')' : $u[0];
 				}
 			}
 		}

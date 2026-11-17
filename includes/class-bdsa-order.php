@@ -56,7 +56,7 @@ class BDSA_Order {
 		// No thana chosen: the team should look at this address before it goes to the courier.
 		if ( '' === trim( (string) $order->get_billing_city() ) ) {
 			$order->update_meta_data( self::META_REVIEW, 'thana' );
-			$order->add_order_note( 'ঠিকানা যাচাই করুন: কাস্টমার থানা/উপজেলা বাছেননি (জানি না)।' );
+			$order->add_order_note( BDSA_Plugin::t( 'Check the address: the customer did not choose a thana / upazila (does not know).', 'ঠিকানা যাচাই করুন: কাস্টমার থানা/উপজেলা বাছেননি (জানি না)।' ) );
 		}
 
 		$order->update_meta_data( self::META_TYPED, $typed );
@@ -76,12 +76,7 @@ class BDSA_Order {
 	}
 
 	private static function zone_name( $zone ) {
-		$map = array(
-			'inside'  => BDSA_Plugin::get( 'label_inside' ),
-			'suburb'  => BDSA_Plugin::get( 'label_suburb' ),
-			'outside' => BDSA_Plugin::get( 'label_outside' ),
-		);
-		return isset( $map[ $zone ] ) ? (string) $map[ $zone ] : '';
+		return in_array( $zone, array( 'inside', 'suburb', 'outside' ), true ) ? BDSA_Delivery::label( $zone ) : '';
 	}
 
 	public static function admin_box( $order ) {

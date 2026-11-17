@@ -74,6 +74,9 @@
 	}
 
 	function bnDigits(s) {
+		if (!C.bn) {
+			return String(s);
+		}
 		return String(s).replace(/\d/g, function (d) {
 			return '০১২৩৪৫৬৭৮৯'.charAt(+d);
 		});
@@ -155,7 +158,7 @@
 		list.forEach(function (t) {
 			var o = document.createElement('option');
 			o.value = t[0];
-			o.textContent = t[1] ? t[1] : t[0];
+			o.textContent = (C.bn && t[1]) ? t[1] : t[0];
 			if (t[0] === keep) {
 				found = true;
 			}
@@ -314,9 +317,9 @@
 		if (res.district) {
 			var meta = document.createElement('div');
 			meta.className = 'bdsa-meta';
-			var parts = [(T.district || '') + ': ' + res.district.b];
+			var parts = [(T.district || '') + ': ' + (C.bn ? res.district.b : res.district.n)];
 			if (res.thana) {
-				parts.push((T.thana || '') + ': ' + res.thana.b);
+				parts.push((T.thana || '') + ': ' + (C.bn ? res.thana.b : res.thana.n));
 			}
 			meta.textContent = parts.join(' · ') + ' — ' + (T.auto || '');
 			box.appendChild(meta);

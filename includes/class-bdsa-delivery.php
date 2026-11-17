@@ -25,27 +25,6 @@ class BDSA_Delivery {
 		add_filter( 'woocommerce_package_rates', array( __CLASS__, 'rates' ), 100, 2 );
 		add_filter( 'woocommerce_customer_default_location_array', array( __CLASS__, 'default_location' ) );
 		add_action( 'woocommerce_review_order_before_order_total', array( __CLASS__, 'price_note' ) );
-		add_action( 'woocommerce_before_checkout_form', array( __CLASS__, 'top_note' ), 20 );
-	}
-
-	/**
-	 * Plain-language price list, shown BEFORE the customer picks an address so the charge never comes as a surprise.
-	 */
-	private static function price_list() {
-		$z = array( 'inside', 'suburb', 'outside' );
-		$o = array();
-		foreach ( $z as $k ) {
-			$f = self::fee( $k );
-			$o[] = '<span class="bdsa-pl-i">' . esc_html( self::label( $k ) ) . ': <strong>' . ( $f > 0 ? wp_kses_post( wc_price( $f ) ) : esc_html__( 'Free', 'woocommerce' ) ) . '</strong></span>';
-		}
-		return implode( ' <span class="bdsa-pl-s">|</span> ', $o );
-	}
-
-	public static function top_note() {
-		if ( ! self::enabled() || ! BDSA_Plugin::get( 'delivery_note' ) ) {
-			return;
-		}
-		echo '<div class="bdsa-topnote">🚚 <b>ডেলিভারি চার্জ:</b> ' . self::price_list() . ' <small>— ঠিকানা দিলে আপনার চার্জ নিচে নিজে থেকে বসে যাবে।</small></div>'; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 
 	/**
@@ -60,12 +39,13 @@ class BDSA_Delivery {
 		$pkg  = WC()->shipping() ? WC()->shipping()->get_packages() : array();
 		$dest = ( $pkg && isset( $pkg[0]['destination'] ) ) ? $pkg[0]['destination'] : array();
 		$c    = self::classify( $dest );
+		$th = esc_html( BDSA_Plugin::t( 'Delivery charge', 'ডেলিভারি চার্জ' ) );
 		if ( null === $c['di'] ) {
-			echo '<tr class="bdsa-fee-row bdsa-fee-pending"><th>ডেলিভারি চার্জ</th><td>ঠিকানা দিলে ঠিক হবে<div class="bdsa-fee-list">' . self::price_list() . '</div></td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			echo '<tr class="bdsa-fee-row bdsa-fee-pending"><th>' . $th . '</th><td>' . esc_html( BDSA_Plugin::t( 'Shown after you enter your address', 'ঠিকানা দিলে দেখানো হবে' ) ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput
 			return;
 		}
 		$fee = (float) WC()->cart->get_shipping_total();
-		echo '<tr class="bdsa-fee-row"><th>ডেলিভারি চার্জ</th><td>' . ( $fee > 0 ? wp_kses_post( wc_price( $fee ) ) : 'ফ্রি' ) . '<div class="bdsa-fee-zone">' . esc_html( self::label( $c['zone'] ) ) . '</div></td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<tr class="bdsa-fee-row"><th>' . $th . '</th><td>' . ( $fee > 0 ? wp_kses_post( wc_price( $fee ) ) : esc_html( BDSA_Plugin::t( 'Free', 'ফ্রি' ) ) ) . '<div class="bdsa-fee-zone">' . esc_html( self::label( $c['zone'] ) ) . '</div></td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 
 	public static function enabled() {
@@ -89,6 +69,7 @@ class BDSA_Delivery {
 					(string) BDSA_Plugin::get( 'extra_inside' ),
 					(string) BDSA_Plugin::get( 'suburb_extra' ),
 					(string) BDSA_Plugin::get( 'dhaka_unknown' ),
+					(string) BDSA_Plugin::get( 'language' ),
 				)
 			)
 		);
@@ -171,8 +152,27 @@ class BDSA_Delivery {
 	}
 
 	public static function label( $zone ) {
-		$key = 'inside' === $zone ? 'label_inside' : ( 'suburb' === $zone ? 'label_suburb' : 'label_outside' );
-		return (string) BDSA_Plugin::get( $key );
+		$key   = 'inside' === $zone ? 'label_inside' : ( 'suburb' === $zone ? 'label_suburb' : 'label_outside' );
+		$saved = trim( (string) BDSA_Plugin::get( $key ) );
+		// Older versions saved the Bangla default text into the settings; the language setting decides now.
+		if ( '' === $saved || in_array( $saved, self::legacy_labels(), true ) ) {
+			return self::default_label( $zone );
+		}
+		return $saved;
+	}
+
+	public static function default_label( $zone ) {
+		if ( 'inside' === $zone ) {
+			return BDSA_Plugin::t( 'Inside Dhaka city delivery', 'ঢাকা সিটির ভেতরে ডেলিভারি' );
+		}
+		if ( 'suburb' === $zone ) {
+			return BDSA_Plugin::t( 'Sub-urban Dhaka city delivery', 'সাব-আরবান ঢাকা সিটিতে ডেলিভারি' );
+		}
+		return BDSA_Plugin::t( 'Outside Dhaka delivery', 'ঢাকার বাইরে ডেলিভারি' );
+	}
+
+	public static function legacy_labels() {
+		return array( 'ঢাকা সিটির ভেতরে ডেলিভারি', 'সাব-আরবান ঢাকা সিটিতে ডেলিভারি', 'ঢাকার বাইরে ডেলিভারি' );
 	}
 
 	/**
@@ -296,8 +296,8 @@ class BDSA_Delivery {
 		}
 
 		$lbl  = self::label( $c['zone'] );
-		if ( null === $c['di'] && BDSA_Plugin::get( 'delivery_note' ) ) {
-			$lbl = 'ডেলিভারি (ঠিকানা দিলে ঠিক হবে)';
+		if ( null === $c['di'] ) {
+			$lbl = BDSA_Plugin::t( 'Delivery (set after address)', 'ডেলিভারি (ঠিকানা দিলে ঠিক হবে)' );
 		}
 		$rate = new WC_Shipping_Rate( self::METHOD_ID, $lbl, self::fee( $c['zone'] ), array(), self::METHOD_ID );
 		$rate->add_meta_data( 'bdsa_zone', $c['zone'] );

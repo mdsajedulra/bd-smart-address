@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       BD Smart Address for WooCommerce
  * Description:       Smart checkout for Bangladesh: type the full address and District/Thana fill in automatically, a cleaned-up full address is suggested, and delivery charge is set automatically (Inside Dhaka city / Sub-urban Dhaka / Outside Dhaka). Clean mobile-first design. Optional AI fallback (OpenRouter free models, Gemini or Claude).
- * Version:           1.7.5
+ * Version:           1.8.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Sajedul
@@ -19,13 +19,13 @@ if ( defined( 'BDSA_VERSION' ) ) {
 	add_action(
 		'admin_notices',
 		function () {
-			echo '<div class="notice notice-error"><p><b>BD Smart Address:</b> আরেকটি কপি আগে থেকেই চালু আছে। Plugins পেজে পুরোনো কপিটি Deactivate করে Delete করুন, তারপর এটি চালু করুন।</p></div>';
+			echo '<div class="notice notice-error"><p><b>BD Smart Address:</b> Another copy of this plugin is already active. Deactivate and delete the old copy on the Plugins page, then activate this one.</p></div>';
 		}
 	);
 	return;
 }
 
-define( 'BDSA_VERSION', '1.7.5' );
+define( 'BDSA_VERSION', '1.8.0' );
 define( 'BDSA_FILE', __FILE__ );
 define( 'BDSA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BDSA_URL', plugin_dir_url( __FILE__ ) );
@@ -45,7 +45,6 @@ class BDSA_Plugin {
 			'field_order'      => 1,
 			'lean_checkout'    => 1,
 			'validate_phone'   => 1,
-			'bangla_labels'    => 1,
 			'style'            => 1,
 			'accent'           => '#c8102e',
 			'min_chars'        => 12,
@@ -55,14 +54,17 @@ class BDSA_Plugin {
 			'fee_inside'       => 60,
 			'fee_suburb'       => 100,
 			'fee_outside'      => 120,
-			'label_inside'     => 'ঢাকা সিটির ভেতরে ডেলিভারি',
-			'label_suburb'     => 'সাব-আরবান ঢাকা সিটিতে ডেলিভারি',
-			'label_outside'    => 'ঢাকার বাইরে ডেলিভারি',
+			'label_inside'     => '',
+			'label_suburb'     => '',
+			'label_outside'    => '',
+			// English by default. The site owner picks Bangla in Settings > BD Smart Address.
+			'language'         => 'en',
+			// Per-field setup: key => array( mode: ''|required|optional|hidden, label, order ).
+			'fields'           => array(),
 			'extra_inside'     => '',
 			'suburb_extra'     => 'Gazipur:Gazipur Sadar, Gazipur:Tongi, Gazipur:Basan, Gazipur:Gachha, Gazipur:Konabari, Narayanganj:Narayanganj Sadar, Narayanganj:Fatullah, Narayanganj:Siddhirganj, Narayanganj:Bandar',
 			'dhaka_unknown'    => 'inside',
 			'lock_delivery'    => 1,
-			'delivery_note'    => 1,
 			'respect_free'     => 1,
 			'save_addresses'   => 1,
 			'phone_required'   => 1,
@@ -91,6 +93,10 @@ class BDSA_Plugin {
 			$saved = get_option( self::OPTION, array() );
 			$saved = is_array( $saved ) ? $saved : array();
 			$cache = array_merge( self::defaults(), $saved );
+			// Sites set up before the language option existed: the old "Bangla labels" tick decides.
+			if ( ! isset( $saved['language'] ) ) {
+				$cache['language'] = ! empty( $saved['bangla_labels'] ) ? 'bn' : 'en';
+			}
 			// Sites that set up a Claude key before Gemini was added keep using Claude.
 			if ( ! isset( $saved['ai_provider'] ) && ! empty( $saved['api_key'] ) ) {
 				$cache['ai_provider'] = 'claude';
@@ -103,6 +109,16 @@ class BDSA_Plugin {
 	 * Remember the installed version and make WooCommerce forget cached shipping rates
 	 * once after an update, so the automatic delivery charge shows straight away.
 	 */
+	/** True when the owner chose Bangla in the dashboard. */
+	public static function bn() {
+		return 'bn' === self::get( 'language' );
+	}
+
+	/** English or Bangla text, by the dashboard language setting. */
+	public static function t( $en, $bn ) {
+		return self::bn() ? $bn : $en;
+	}
+
 	public static function maybe_upgrade() {
 		$prev = (string) get_option( 'bdsa_version', '' );
 		if ( BDSA_VERSION === $prev ) {
